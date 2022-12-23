@@ -41,25 +41,6 @@ export class EksCluster extends Construct {
       Tags.of(subnet).add("kubernetes.io/role/internal-elb", "1");
     });
 
-    const allowControlPlaneSsl = new ec2.SecurityGroup(
-      this,
-      "allowControlPlaneSsl",
-      {
-        vpc: props.vpc,
-        allowAllOutbound: true,
-        description: "Allows access to EKS control plane on 443",
-      }
-    );
-
-    const vpnIpv4Space = ec2.Peer.ipv4("10.11.112.19/32");
-    allowControlPlaneSsl.addIngressRule(
-      vpnIpv4Space,
-      ec2.Port.tcp(443),
-      "Allow access from VPN"
-    );
-
-    eksCluster.connections.addSecurityGroup(allowControlPlaneSsl);
-
     props.networkAccessGrants.forEach((nag, i) =>
       ec2.SecurityGroup.fromSecurityGroupId(
         this,
